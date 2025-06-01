@@ -277,7 +277,7 @@ export default function GarageScreen() {
                     onPress={() => setIsPublic(!isPublic)}
                   >
                     {isPublic && (
-                      <Ionicons name="checkmark" size={18} color="#fff" />
+                      <Ionicons name="checkmark\" size={18} color="#fff" />
                     )}
                   </TouchableOpacity>
                 </View>
