@@ -63,21 +63,53 @@ function MainTabs() {
 }
 
 export default function Navigation() {
-  const { user, loading } = useAuth();
+  const { user, loading, usingMockData } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
   }
 
+  // For mock data mode, we'll set up a way to toggle between auth and main screens
+  const initialRouteName = usingMockData ? 'DevMenu' : (user ? 'Main' : 'Auth');
+
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {user ? (
-          <Stack.Screen name="Main\" component={MainTabs} />
-        ) : (
-          <Stack.Screen name="Auth" component={AuthStack} />
+      <Stack.Navigator 
+        initialRouteName={initialRouteName}
+        screenOptions={{ headerShown: false }}
+      >
+        {usingMockData && (
+          <Stack.Screen name="DevMenu" component={DevMenuScreen} />
         )}
+        <Stack.Screen name="Auth" component={AuthStack} />
+        <Stack.Screen name="Main" component={MainTabs} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
+// Development menu for testing both authenticated and unauthenticated flows
+function DevMenuScreen({ navigation }: any) {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen 
+        name="DevMenuHome"
+        options={{ title: 'Development Menu' }}
+        component={() => (
+          <React.Fragment>
+            <Button 
+              title="Auth Flow (Not Logged In)" 
+              onPress={() => navigation.navigate('Auth')} 
+            />
+            <Button 
+              title="Main Flow (Logged In)" 
+              onPress={() => navigation.navigate('Main')} 
+            />
+          </React.Fragment>
+        )}
+      />
+    </Stack.Navigator>
+  );
+}
+
+import { Button } from 'react-native';
