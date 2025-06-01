@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Keep the splash screen visible until we're ready
 SplashScreen.preventAutoHideAsync();
@@ -57,13 +58,15 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-        <AuthProvider>
-          <Navigation />
-          <StatusBar style="auto" />
-        </AuthProvider>
-      </View>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+          <AuthProvider>
+            <Navigation />
+            <StatusBar style="auto" />
+          </AuthProvider>
+        </View>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
