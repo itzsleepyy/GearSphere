@@ -79,7 +79,7 @@ export default function Navigation() {
         screenOptions={{ headerShown: false }}
       >
         {usingMockData && (
-          <Stack.Screen name="DevMenu" component={DevMenuScreen} />
+          <Stack.Screen name="DevMenu\" component={DevMenuScreen} />
         )}
         <Stack.Screen name="Auth" component={AuthStack} />
         <Stack.Screen name="Main" component={MainTabs} />
