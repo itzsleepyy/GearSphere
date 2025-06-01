@@ -62,6 +62,22 @@ function MainTabs() {
   );
 }
 
+// Development menu component
+function DevMenuHome({ navigation }) {
+  return (
+    <React.Fragment>
+      <Button 
+        title="Auth Flow (Not Logged In)" 
+        onPress={() => navigation.navigate('Auth')} 
+      />
+      <Button 
+        title="Main Flow (Logged In)" 
+        onPress={() => navigation.navigate('Main')} 
+      />
+    </React.Fragment>
+  );
+}
+
 export default function Navigation() {
   const { user, loading, usingMockData } = useAuth();
 
@@ -79,36 +95,23 @@ export default function Navigation() {
         screenOptions={{ headerShown: false }}
       >
         {usingMockData && (
-          <Stack.Screen name="DevMenu\" component={DevMenuScreen} />
+          <Stack.Screen name="DevMenu">
+            {() => (
+              <Stack.Navigator>
+                <Stack.Screen 
+                  name="DevMenuHome"
+                  options={{ title: 'Development Menu' }}
+                >
+                  {(props) => <DevMenuHome {...props} />}
+                </Stack.Screen>
+              </Stack.Navigator>
+            )}
+          </Stack.Screen>
         )}
         <Stack.Screen name="Auth" component={AuthStack} />
         <Stack.Screen name="Main" component={MainTabs} />
       </Stack.Navigator>
     </NavigationContainer>
-  );
-}
-
-// Development menu for testing both authenticated and unauthenticated flows
-function DevMenuScreen({ navigation }: any) {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen 
-        name="DevMenuHome"
-        options={{ title: 'Development Menu' }}
-        component={() => (
-          <React.Fragment>
-            <Button 
-              title="Auth Flow (Not Logged In)" 
-              onPress={() => navigation.navigate('Auth')} 
-            />
-            <Button 
-              title="Main Flow (Logged In)" 
-              onPress={() => navigation.navigate('Main')} 
-            />
-          </React.Fragment>
-        )}
-      />
-    </Stack.Navigator>
   );
 }
 

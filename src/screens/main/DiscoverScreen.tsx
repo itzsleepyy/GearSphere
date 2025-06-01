@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring,
+  useAnimatedGestureHandler,
+  runOnJS 
+} from 'react-native-reanimated';
+import { PanGestureHandler } from 'react-native-gesture-handler';
 
 // Mock data for events
 const MOCK_EVENTS = [
@@ -50,47 +57,81 @@ export default function DiscoverScreen() {
   
   const rotation = useSharedValue(0);
   const scale = useSharedValue(1);
+  const translateX = useSharedValue(0);
   
   const cardStyle = useAnimatedStyle(() => {
     return {
       transform: [
+        { translateX: translateX.value },
         { rotate: `${rotation.value}deg` },
         { scale: scale.value },
       ],
     };
   });
+
+  const nextCard = () => {
+    if (currentIndex < MOCK_EVENTS.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(0); // Loop back to the first event
+    }
+    translateX.value = 0;
+    rotation.value = 0;
+    scale.value = 1;
+  };
   
   const handleSwipeLeft = () => {
+    translateX.value = withSpring(-300);
     rotation.value = withSpring(-30);
     scale.value = withSpring(0.8);
     
     setTimeout(() => {
-      rotation.value = withSpring(0);
-      scale.value = withSpring(1);
-      
-      if (currentIndex < MOCK_EVENTS.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else {
-        setCurrentIndex(0); // Loop back to the first event
-      }
+      nextCard();
     }, 300);
   };
   
   const handleSwipeRight = () => {
+    translateX.value = withSpring(300);
     rotation.value = withSpring(30);
     scale.value = withSpring(0.8);
     
     setTimeout(() => {
-      rotation.value = withSpring(0);
-      scale.value = withSpring(1);
-      
-      if (currentIndex < MOCK_EVENTS.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else {
-        setCurrentIndex(0); // Loop back to the first event
-      }
+      nextCard();
     }, 300);
   };
+
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: (_, ctx) => {
+      ctx.startX = translateX.value;
+    },
+    onActive: (event, ctx) => {
+      translateX.value = ctx.startX + event.translationX;
+      // Calculate rotation based on swipe distance (max 30 degrees)
+      rotation.value = (event.translationX / 10) * 3;
+      // Slightly reduce scale as card is swiped
+      scale.value = Math.max(0.85, 1 - Math.abs(event.translationX) / 1000);
+    },
+    onEnd: (event) => {
+      if (event.translationX > 100) {
+        // Swiped right far enough
+        translateX.value = withSpring(500);
+        rotation.value = withSpring(30);
+        scale.value = withSpring(0.8);
+        runOnJS(nextCard)();
+      } else if (event.translationX < -100) {
+        // Swiped left far enough
+        translateX.value = withSpring(-500);
+        rotation.value = withSpring(-30);
+        scale.value = withSpring(0.8);
+        runOnJS(nextCard)();
+      } else {
+        // Not swiped far enough, return to center
+        translateX.value = withSpring(0);
+        rotation.value = withSpring(0);
+        scale.value = withSpring(1);
+      }
+    },
+  });
   
   const currentEvent = MOCK_EVENTS[currentIndex];
   
@@ -118,47 +159,49 @@ export default function DiscoverScreen() {
       </View>
       
       <View style={styles.cardContainer}>
-        <Animated.View style={[styles.card, cardStyle]}>
-          <Image 
-            source={{ uri: currentEvent.image }}
-            style={styles.cardImage}
-          />
-          <View style={styles.cardOverlay}>
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{currentEvent.title}</Text>
-              <View style={styles.cardInfo}>
-                <View style={styles.cardInfoItem}>
-                  <Ionicons name="calendar-outline" size={18} color="#fff" />
-                  <Text style={styles.cardInfoText}>{currentEvent.date}</Text>
-                </View>
-                <View style={styles.cardInfoItem}>
-                  <Ionicons name="time-outline" size={18} color="#fff" />
-                  <Text style={styles.cardInfoText}>{currentEvent.time}</Text>
-                </View>
-                <View style={styles.cardInfoItem}>
-                  <Ionicons name="location-outline" size={18} color="#fff" />
-                  <Text style={styles.cardInfoText}>{currentEvent.location}</Text>
-                </View>
-                <View style={styles.cardInfoItem}>
-                  <Ionicons name="people-outline" size={18} color="#fff" />
-                  <Text style={styles.cardInfoText}>{currentEvent.attendees} attendees</Text>
-                </View>
-                <View style={styles.cardInfoItem}>
-                  <Ionicons name="navigate-outline" size={18} color="#fff" />
-                  <Text style={styles.cardInfoText}>{currentEvent.distance}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.tagsContainer}>
-                {currentEvent.tags.map(tag => (
-                  <View key={tag} style={styles.tag}>
-                    <Text style={styles.tagText}>{tag}</Text>
+        <PanGestureHandler onGestureEvent={gestureHandler}>
+          <Animated.View style={[styles.card, cardStyle]}>
+            <Image 
+              source={{ uri: currentEvent.image }}
+              style={styles.cardImage}
+            />
+            <View style={styles.cardOverlay}>
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{currentEvent.title}</Text>
+                <View style={styles.cardInfo}>
+                  <View style={styles.cardInfoItem}>
+                    <Ionicons name="calendar-outline" size={18} color="#fff" />
+                    <Text style={styles.cardInfoText}>{currentEvent.date}</Text>
                   </View>
-                ))}
+                  <View style={styles.cardInfoItem}>
+                    <Ionicons name="time-outline" size={18} color="#fff" />
+                    <Text style={styles.cardInfoText}>{currentEvent.time}</Text>
+                  </View>
+                  <View style={styles.cardInfoItem}>
+                    <Ionicons name="location-outline" size={18} color="#fff" />
+                    <Text style={styles.cardInfoText}>{currentEvent.location}</Text>
+                  </View>
+                  <View style={styles.cardInfoItem}>
+                    <Ionicons name="people-outline" size={18} color="#fff" />
+                    <Text style={styles.cardInfoText}>{currentEvent.attendees} attendees</Text>
+                  </View>
+                  <View style={styles.cardInfoItem}>
+                    <Ionicons name="navigate-outline" size={18} color="#fff" />
+                    <Text style={styles.cardInfoText}>{currentEvent.distance}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.tagsContainer}>
+                  {currentEvent.tags.map(tag => (
+                    <View key={tag} style={styles.tag}>
+                      <Text style={styles.tagText}>{tag}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             </View>
-          </View>
-        </Animated.View>
+          </Animated.View>
+        </PanGestureHandler>
       </View>
       
       <View style={styles.actionsContainer}>
@@ -257,7 +300,7 @@ export default function DiscoverScreen() {
                     onPress={() => setGarageMatch(!garageMatch)}
                   >
                     {garageMatch && (
-                      <Ionicons name="checkmark\" size={18} color="#fff" />
+                      <Ionicons name="checkmark" size={18} color="#fff" />
                     )}
                   </TouchableOpacity>
                 </View>
