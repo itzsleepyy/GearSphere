@@ -4,6 +4,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/contexts/AuthContext';
 import Navigation from './src/navigation';
 import { isMockDataMode } from './src/lib/supabase';
+import { useEffect, useState, useCallback } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
+import { View } from 'react-native';
+
+// Keep the splash screen visible until we're ready
+SplashScreen.preventAutoHideAsync();
 
 // Display console message if using mock data
 if (isMockDataMode()) {
@@ -16,12 +24,46 @@ if (isMockDataMode()) {
 }
 
 export default function App() {
+  const [appIsReady, setAppIsReady] = useState(false);
+
+  // Load any resources or data needed for the app
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Load fonts
+        await Font.loadAsync({
+          ...Ionicons.font,
+        });
+      } catch (e) {
+        console.warn('Error loading assets:', e);
+      } finally {
+        // Tell the application to render
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (appIsReady) {
+      // This tells the splash screen to hide immediately
+      await SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null;
+  }
+
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <Navigation />
-        <StatusBar style="auto" />
-      </AuthProvider>
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <AuthProvider>
+          <Navigation />
+          <StatusBar style="auto" />
+        </AuthProvider>
+      </View>
     </SafeAreaProvider>
   );
 }
