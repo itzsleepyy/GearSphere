@@ -73,7 +73,7 @@ export default function Navigation() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
-          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen name="Main\" component={MainTabs} />
         ) : (
           <Stack.Screen name="Auth" component={AuthStack} />
         )}

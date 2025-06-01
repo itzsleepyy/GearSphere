@@ -257,7 +257,7 @@ export default function DiscoverScreen() {
                     onPress={() => setGarageMatch(!garageMatch)}
                   >
                     {garageMatch && (
-                      <Ionicons name="checkmark" size={18} color="#fff" />
+                      <Ionicons name="checkmark\" size={18} color="#fff" />
                     )}
                   </TouchableOpacity>
                 </View>
