@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 // Mock data for vehicles
@@ -26,6 +26,8 @@ const MOCK_VEHICLES = [
 
 export default function GarageScreen() {
   const [showAddVehicle, setShowAddVehicle] = useState(false);
+  const [showVehicleOptions, setShowVehicleOptions] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
   const [year, setYear] = useState('');
@@ -42,6 +44,45 @@ export default function GarageScreen() {
     setYear('');
     setIsPublic(true);
     setMods('');
+  };
+
+  const handleVehicleOptions = (vehicle: any) => {
+    setSelectedVehicle(vehicle);
+    setShowVehicleOptions(true);
+  };
+
+  const handleEditVehicle = () => {
+    if (selectedVehicle) {
+      Alert.alert(
+        "Edit Vehicle",
+        `Edit details for your ${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Edit", 
+            onPress: () => {
+              // In a real app, this would open the edit form with pre-filled data
+              setShowVehicleOptions(false);
+              Alert.alert("Edit Vehicle", "Vehicle edit form would open here");
+            }
+          }
+        ]
+      );
+    }
+  };
+
+  const handleViewEvents = () => {
+    if (selectedVehicle) {
+      setShowVehicleOptions(false);
+      Alert.alert("Vehicle Events", "View all events this vehicle has attended");
+    }
+  };
+
+  const handleViewGallery = () => {
+    if (selectedVehicle) {
+      setShowVehicleOptions(false);
+      Alert.alert("Vehicle Gallery", "View all photos of this vehicle");
+    }
   };
   
   return (
@@ -83,7 +124,9 @@ export default function GarageScreen() {
                   )}
                 </View>
                 
-                <TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleVehicleOptions(vehicle)}
+                >
                   <Ionicons name="ellipsis-vertical" size={20} color="#666" />
                 </TouchableOpacity>
               </View>
@@ -99,17 +142,35 @@ export default function GarageScreen() {
               </View>
               
               <View style={styles.vehicleFooter}>
-                <TouchableOpacity style={styles.vehicleButton}>
+                <TouchableOpacity 
+                  style={styles.vehicleButton}
+                  onPress={() => {
+                    setSelectedVehicle(vehicle);
+                    handleEditVehicle();
+                  }}
+                >
                   <Ionicons name="pencil-outline" size={16} color="#666" />
                   <Text style={styles.vehicleButtonText}>Edit</Text>
                 </TouchableOpacity>
                 
-                <TouchableOpacity style={styles.vehicleButton}>
+                <TouchableOpacity 
+                  style={styles.vehicleButton}
+                  onPress={() => {
+                    setSelectedVehicle(vehicle);
+                    handleViewEvents();
+                  }}
+                >
                   <Ionicons name="calendar-outline" size={16} color="#666" />
                   <Text style={styles.vehicleButtonText}>Events</Text>
                 </TouchableOpacity>
                 
-                <TouchableOpacity style={styles.vehicleButton}>
+                <TouchableOpacity 
+                  style={styles.vehicleButton}
+                  onPress={() => {
+                    setSelectedVehicle(vehicle);
+                    handleViewGallery();
+                  }}
+                >
                   <Ionicons name="images-outline" size={16} color="#666" />
                   <Text style={styles.vehicleButtonText}>Gallery</Text>
                 </TouchableOpacity>
@@ -191,7 +252,10 @@ export default function GarageScreen() {
               
               <View style={styles.formSection}>
                 <Text style={styles.formSectionTitle}>Vehicle Images</Text>
-                <TouchableOpacity style={styles.uploadButton}>
+                <TouchableOpacity 
+                  style={styles.uploadButton}
+                  onPress={() => Alert.alert("Upload Images", "Image picker would open here")}
+                >
                   <Ionicons name="camera-outline" size={24} color="#FF5A5F" />
                   <Text style={styles.uploadButtonText}>Upload Images</Text>
                 </TouchableOpacity>
@@ -213,7 +277,7 @@ export default function GarageScreen() {
                     onPress={() => setIsPublic(!isPublic)}
                   >
                     {isPublic && (
-                      <Ionicons name="checkmark\" size={18} color="#fff" />
+                      <Ionicons name="checkmark" size={18} color="#fff" />
                     )}
                   </TouchableOpacity>
                 </View>
@@ -233,6 +297,83 @@ export default function GarageScreen() {
                 onPress={handleAddVehicle}
               >
                 <Text style={styles.saveButtonText}>Save Vehicle</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Vehicle Options Modal */}
+      <Modal
+        visible={showVehicleOptions}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.optionsModalContainer}>
+          <View style={styles.optionsModalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Vehicle Options</Text>
+              <TouchableOpacity onPress={() => setShowVehicleOptions(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.optionsList}>
+              <TouchableOpacity 
+                style={styles.optionItem}
+                onPress={handleEditVehicle}
+              >
+                <Ionicons name="pencil-outline" size={24} color="#FF5A5F" />
+                <Text style={styles.optionText}>Edit Vehicle</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.optionItem}
+                onPress={handleViewEvents}
+              >
+                <Ionicons name="calendar-outline" size={24} color="#FF5A5F" />
+                <Text style={styles.optionText}>View Vehicle Events</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.optionItem}
+                onPress={handleViewGallery}
+              >
+                <Ionicons name="images-outline" size={24} color="#FF5A5F" />
+                <Text style={styles.optionText}>View Gallery</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.optionItem}
+                onPress={() => {
+                  setShowVehicleOptions(false);
+                  Alert.alert("Share Vehicle", "Share this vehicle with your friends");
+                }}
+              >
+                <Ionicons name="share-social-outline" size={24} color="#FF5A5F" />
+                <Text style={styles.optionText}>Share Vehicle</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.optionItem, styles.deleteOption]}
+                onPress={() => {
+                  setShowVehicleOptions(false);
+                  Alert.alert(
+                    "Delete Vehicle",
+                    "Are you sure you want to delete this vehicle?",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      { 
+                        text: "Delete", 
+                        style: "destructive",
+                        onPress: () => Alert.alert("Deleted", "Vehicle has been deleted")
+                      }
+                    ]
+                  );
+                }}
+              >
+                <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+                <Text style={styles.deleteOptionText}>Delete Vehicle</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -497,5 +638,39 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  optionsModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  optionsModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 30,
+  },
+  optionsList: {
+    padding: 20,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  optionText: {
+    fontSize: 16,
+    marginLeft: 15,
+    color: '#333',
+  },
+  deleteOption: {
+    borderBottomWidth: 0,
+  },
+  deleteOptionText: {
+    fontSize: 16,
+    marginLeft: 15,
+    color: '#FF3B30',
   },
 });

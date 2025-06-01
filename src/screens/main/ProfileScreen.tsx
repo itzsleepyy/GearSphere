@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -16,6 +16,62 @@ export default function ProfileScreen() {
       console.error('Error signing out:', error);
     }
   };
+
+  const handleEditProfile = () => {
+    Alert.alert(
+      "Edit Profile",
+      "Would you like to edit your profile?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Edit", onPress: () => console.log("Edit profile") }
+      ]
+    );
+  };
+
+  const handleChangeProfilePhoto = () => {
+    Alert.alert(
+      "Change Profile Photo",
+      "Would you like to change your profile photo?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Take Photo", onPress: () => console.log("Take photo") },
+        { text: "Choose from Library", onPress: () => console.log("Choose from library") }
+      ]
+    );
+  };
+
+  const handleOpenSettings = () => {
+    Alert.alert(
+      "Settings",
+      "Would you like to open app settings?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Open", onPress: () => console.log("Open settings") }
+      ]
+    );
+  };
+
+  const handleViewEvent = () => {
+    Alert.alert(
+      "View Event",
+      "Navigate to event details",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "View", onPress: () => console.log("View event details") }
+      ]
+    );
+  };
+
+  const handleViewAllEvents = () => {
+    Alert.alert(
+      "View All Events",
+      "Navigate to all events",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "View", onPress: () => console.log("View all events") }
+      ]
+    );
+  };
   
   // Mock data for user stats
   const userStats = {
@@ -30,28 +86,37 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleOpenSettings}>
           <Ionicons name="settings-outline" size={24} color="#333" />
         </TouchableOpacity>
       </View>
       
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.profileHeader}>
-          <View style={styles.profileImageContainer}>
+          <TouchableOpacity 
+            style={styles.profileImageContainer}
+            onPress={handleChangeProfilePhoto}
+          >
             <View style={styles.profileImage}>
               <Ionicons name="person" size={50} color="#fff" />
             </View>
-            <TouchableOpacity style={styles.editProfileImageButton}>
+            <TouchableOpacity 
+              style={styles.editProfileImageButton}
+              onPress={handleChangeProfilePhoto}
+            >
               <Ionicons name="camera" size={20} color="#fff" />
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
           
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>JDM_Enthusiast</Text>
             <Text style={styles.profileLocation}>San Francisco, CA</Text>
           </View>
           
-          <TouchableOpacity style={styles.editProfileButton}>
+          <TouchableOpacity 
+            style={styles.editProfileButton}
+            onPress={handleEditProfile}
+          >
             <Text style={styles.editProfileButtonText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
@@ -93,7 +158,10 @@ export default function ProfileScreen() {
         
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Upcoming Events</Text>
-          <View style={styles.upcomingEvent}>
+          <TouchableOpacity 
+            style={styles.upcomingEvent}
+            onPress={handleViewEvent}
+          >
             <View style={styles.upcomingEventDate}>
               <Text style={styles.upcomingEventDay}>15</Text>
               <Text style={styles.upcomingEventMonth}>May</Text>
@@ -105,12 +173,18 @@ export default function ProfileScreen() {
               <Text style={styles.upcomingEventTime}>6:00 PM - 9:00 PM</Text>
             </View>
             
-            <TouchableOpacity style={styles.upcomingEventAction}>
+            <TouchableOpacity 
+              style={styles.upcomingEventAction}
+              onPress={handleViewEvent}
+            >
               <Ionicons name="chevron-forward" size={20} color="#666" />
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
           
-          <TouchableOpacity style={styles.viewAllButton}>
+          <TouchableOpacity 
+            style={styles.viewAllButton}
+            onPress={handleViewAllEvents}
+          >
             <Text style={styles.viewAllButtonText}>View All Events</Text>
           </TouchableOpacity>
         </View>

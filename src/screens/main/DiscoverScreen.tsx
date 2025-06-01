@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { 
   useSharedValue, 
@@ -50,6 +50,7 @@ const MOCK_EVENTS = [
 export default function DiscoverScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
+  const [showEventDetails, setShowEventDetails] = useState(false);
   const [radius, setRadius] = useState('50');
   const [dateRange, setDateRange] = useState('30');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -101,10 +102,10 @@ export default function DiscoverScreen() {
   };
 
   const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx) => {
+    onStart: (_, ctx: any) => {
       ctx.startX = translateX.value;
     },
-    onActive: (event, ctx) => {
+    onActive: (event, ctx: any) => {
       translateX.value = ctx.startX + event.translationX;
       // Calculate rotation based on swipe distance (max 30 degrees)
       rotation.value = (event.translationX / 10) * 3;
@@ -141,6 +142,21 @@ export default function DiscoverScreen() {
     } else {
       setSelectedTags([...selectedTags, tag]);
     }
+  };
+
+  const handleInfoPress = () => {
+    setShowEventDetails(true);
+  };
+
+  const handleSharePress = () => {
+    Alert.alert(
+      "Share Event",
+      `Share ${currentEvent.title} with friends`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Share", onPress: () => console.log("Share event:", currentEvent.title) }
+      ]
+    );
   };
   
   const allTags = ['JDM', 'European', 'American', 'Classic', 'Modern', 'Super Cars', 
@@ -205,7 +221,10 @@ export default function DiscoverScreen() {
       </View>
       
       <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.actionButtonSecondary}>
+        <TouchableOpacity 
+          style={styles.actionButtonSecondary}
+          onPress={handleInfoPress}
+        >
           <Ionicons name="information-circle-outline" size={28} color="#FF5A5F" />
         </TouchableOpacity>
         
@@ -223,7 +242,10 @@ export default function DiscoverScreen() {
           <Ionicons name="checkmark" size={32} color="#fff" />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.actionButtonSecondary}>
+        <TouchableOpacity 
+          style={styles.actionButtonSecondary}
+          onPress={handleSharePress}
+        >
           <Ionicons name="share-outline" size={28} color="#FF5A5F" />
         </TouchableOpacity>
       </View>
@@ -300,7 +322,7 @@ export default function DiscoverScreen() {
                     onPress={() => setGarageMatch(!garageMatch)}
                   >
                     {garageMatch && (
-                      <Ionicons name="checkmark\" size={18} color="#fff" />
+                      <Ionicons name="checkmark" size={18} color="#fff" />
                     )}
                   </TouchableOpacity>
                 </View>
@@ -325,6 +347,91 @@ export default function DiscoverScreen() {
                 onPress={() => setShowFilters(false)}
               >
                 <Text style={styles.applyButtonText}>Apply Filters</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Event Details Modal */}
+      <Modal
+        visible={showEventDetails}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{currentEvent.title}</Text>
+              <TouchableOpacity onPress={() => setShowEventDetails(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalBody}>
+              <Image 
+                source={{ uri: currentEvent.image }}
+                style={styles.eventDetailImage}
+              />
+              
+              <View style={styles.eventDetailSection}>
+                <View style={styles.eventDetailItem}>
+                  <Ionicons name="calendar-outline" size={22} color="#FF5A5F" />
+                  <Text style={styles.eventDetailText}>{currentEvent.date}</Text>
+                </View>
+                
+                <View style={styles.eventDetailItem}>
+                  <Ionicons name="time-outline" size={22} color="#FF5A5F" />
+                  <Text style={styles.eventDetailText}>{currentEvent.time}</Text>
+                </View>
+                
+                <View style={styles.eventDetailItem}>
+                  <Ionicons name="location-outline" size={22} color="#FF5A5F" />
+                  <Text style={styles.eventDetailText}>{currentEvent.location}</Text>
+                </View>
+                
+                <View style={styles.eventDetailItem}>
+                  <Ionicons name="people-outline" size={22} color="#FF5A5F" />
+                  <Text style={styles.eventDetailText}>{currentEvent.attendees} attendees</Text>
+                </View>
+              </View>
+              
+              <View style={styles.eventDetailSection}>
+                <Text style={styles.eventDetailSectionTitle}>Tags</Text>
+                <View style={styles.eventDetailTags}>
+                  {currentEvent.tags.map(tag => (
+                    <View key={tag} style={styles.eventDetailTag}>
+                      <Text style={styles.eventDetailTagText}>{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+              
+              <View style={styles.eventDetailSection}>
+                <Text style={styles.eventDetailSectionTitle}>Description</Text>
+                <Text style={styles.eventDetailDescription}>
+                  Join us for an amazing car event with enthusiasts from all over the region. 
+                  Bring your ride and share your passion with fellow car lovers!
+                </Text>
+              </View>
+            </ScrollView>
+            
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.resetButton}
+                onPress={() => setShowEventDetails(false)}
+              >
+                <Text style={styles.resetButtonText}>Close</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={() => {
+                  Alert.alert("RSVP", "You've successfully RSVP'd to this event!");
+                  setShowEventDetails(false);
+                }}
+              >
+                <Text style={styles.applyButtonText}>RSVP</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -570,5 +677,50 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  eventDetailImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  eventDetailSection: {
+    marginBottom: 20,
+  },
+  eventDetailSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  eventDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  eventDetailText: {
+    fontSize: 16,
+    marginLeft: 10,
+    color: '#333',
+  },
+  eventDetailTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  eventDetailTag: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  eventDetailTagText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  eventDetailDescription: {
+    fontSize: 16,
+    color: '#333',
+    lineHeight: 24,
   },
 });

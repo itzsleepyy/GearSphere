@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 // Mock data for badges
@@ -65,6 +65,39 @@ export default function BadgesScreen() {
   const [viewMode, setViewMode] = useState('grid');
   const [selectedBadge, setSelectedBadge] = useState<any>(null);
   const [showAchievements, setShowAchievements] = useState(false);
+  
+  const handleShareBadge = () => {
+    if (selectedBadge) {
+      Alert.alert(
+        "Share Badge",
+        `Share your "${selectedBadge.name}" badge with friends`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Share", onPress: () => console.log("Share badge:", selectedBadge.name) }
+        ]
+      );
+    }
+  };
+
+  const handleViewEvent = () => {
+    if (selectedBadge) {
+      Alert.alert(
+        "View Event",
+        `View details for ${selectedBadge.event}`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "View", 
+            onPress: () => {
+              setSelectedBadge(null);
+              // In a real app, this would navigate to the event details screen
+              console.log("Navigate to event:", selectedBadge.event);
+            }
+          }
+        ]
+      );
+    }
+  };
   
   return (
     <View style={styles.container}>
@@ -239,12 +272,18 @@ export default function BadgesScreen() {
                 </View>
                 
                 <View style={styles.badgeDetailActions}>
-                  <TouchableOpacity style={styles.badgeDetailAction}>
+                  <TouchableOpacity 
+                    style={styles.badgeDetailAction}
+                    onPress={handleShareBadge}
+                  >
                     <Ionicons name="share-social-outline" size={20} color="#666" />
                     <Text style={styles.badgeDetailActionText}>Share</Text>
                   </TouchableOpacity>
                   
-                  <TouchableOpacity style={styles.badgeDetailAction}>
+                  <TouchableOpacity 
+                    style={styles.badgeDetailAction}
+                    onPress={handleViewEvent}
+                  >
                     <Ionicons name="eye-outline" size={20} color="#666" />
                     <Text style={styles.badgeDetailActionText}>View Event</Text>
                   </TouchableOpacity>

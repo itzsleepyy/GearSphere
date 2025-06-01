@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Alert } from 'react-native';
 import MapView, { Marker, Callout, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -60,6 +60,7 @@ const MOCK_EVENTS = [
 
 export default function MapScreen() {
   const [showFilters, setShowFilters] = useState(false);
+  const [showEventDetails, setShowEventDetails] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [location, setLocation] = useState<any>(null);
   const [radius, setRadius] = useState('50');
@@ -92,6 +93,31 @@ export default function MapScreen() {
       setSelectedTags(selectedTags.filter(t => t !== tag));
     } else {
       setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  const handleViewDetails = () => {
+    if (selectedEvent) {
+      setShowEventDetails(true);
+    }
+  };
+
+  const handleRSVP = () => {
+    if (selectedEvent) {
+      Alert.alert(
+        "RSVP Confirmation",
+        `Would you like to RSVP to ${selectedEvent.title}?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Confirm", 
+            onPress: () => {
+              Alert.alert("Success", `You've successfully RSVP'd to ${selectedEvent.title}!`);
+              setSelectedEvent(null);
+            }
+          }
+        ]
+      );
     }
   };
   
@@ -198,14 +224,20 @@ export default function MapScreen() {
             </View>
             
             <View style={styles.eventPreviewActions}>
-              <TouchableOpacity style={styles.eventPreviewActionButton}>
+              <TouchableOpacity 
+                style={styles.eventPreviewActionButton}
+                onPress={handleViewDetails}
+              >
                 <Text style={styles.eventPreviewActionButtonText}>View Details</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity style={[
-                styles.eventPreviewActionButton, 
-                styles.eventPreviewActionButtonPrimary
-              ]}>
+              <TouchableOpacity 
+                style={[
+                  styles.eventPreviewActionButton, 
+                  styles.eventPreviewActionButtonPrimary
+                ]}
+                onPress={handleRSVP}
+              >
                 <Text style={styles.eventPreviewActionButtonTextPrimary}>
                   RSVP
                 </Text>
@@ -280,6 +312,95 @@ export default function MapScreen() {
                 onPress={() => setShowFilters(false)}
               >
                 <Text style={styles.applyButtonText}>Apply Filters</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Event Details Modal */}
+      <Modal
+        visible={showEventDetails}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{selectedEvent?.title}</Text>
+              <TouchableOpacity onPress={() => setShowEventDetails(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalBody}>
+              <View style={styles.eventDetailSection}>
+                <View style={styles.eventDetailItem}>
+                  <Ionicons name="calendar-outline" size={22} color="#FF5A5F" />
+                  <Text style={styles.eventDetailText}>{selectedEvent?.date}</Text>
+                </View>
+                
+                <View style={styles.eventDetailItem}>
+                  <Ionicons name="time-outline" size={22} color="#FF5A5F" />
+                  <Text style={styles.eventDetailText}>{selectedEvent?.time}</Text>
+                </View>
+                
+                <View style={styles.eventDetailItem}>
+                  <Ionicons name="location-outline" size={22} color="#FF5A5F" />
+                  <Text style={styles.eventDetailText}>{selectedEvent?.location}</Text>
+                </View>
+                
+                <View style={styles.eventDetailItem}>
+                  <Ionicons name="people-outline" size={22} color="#FF5A5F" />
+                  <Text style={styles.eventDetailText}>{selectedEvent?.attendees} attendees</Text>
+                </View>
+              </View>
+              
+              <View style={styles.eventDetailSection}>
+                <Text style={styles.eventDetailSectionTitle}>Tags</Text>
+                <View style={styles.eventDetailTags}>
+                  {selectedEvent?.tags.map((tag: string) => (
+                    <View key={tag} style={styles.eventDetailTag}>
+                      <Text style={styles.eventDetailTagText}>{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+              
+              <View style={styles.eventDetailSection}>
+                <Text style={styles.eventDetailSectionTitle}>Description</Text>
+                <Text style={styles.eventDetailDescription}>
+                  Join us for an amazing car event with enthusiasts from all over the region. 
+                  Bring your ride and share your passion with fellow car lovers!
+                </Text>
+              </View>
+
+              <View style={styles.eventDetailSection}>
+                <Text style={styles.eventDetailSectionTitle}>Organizer</Text>
+                <View style={styles.eventDetailItem}>
+                  <Ionicons name="person-outline" size={22} color="#FF5A5F" />
+                  <Text style={styles.eventDetailText}>Car Enthusiasts Club</Text>
+                </View>
+              </View>
+            </ScrollView>
+            
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.resetButton}
+                onPress={() => setShowEventDetails(false)}
+              >
+                <Text style={styles.resetButtonText}>Close</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={() => {
+                  Alert.alert("RSVP", "You've successfully RSVP'd to this event!");
+                  setShowEventDetails(false);
+                  setSelectedEvent(null);
+                }}
+              >
+                <Text style={styles.applyButtonText}>RSVP</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -533,5 +654,44 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  eventDetailSection: {
+    marginBottom: 20,
+  },
+  eventDetailSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  eventDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  eventDetailText: {
+    fontSize: 16,
+    marginLeft: 10,
+    color: '#333',
+  },
+  eventDetailTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  eventDetailTag: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  eventDetailTagText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  eventDetailDescription: {
+    fontSize: 16,
+    color: '#333',
+    lineHeight: 24,
   },
 });
